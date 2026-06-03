@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RAG Chatbot — Query Flow</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 1.4rem;
+      color: #1a1a2e;
+      margin-bottom: 0.25rem;
+    }
+    p.subtitle {
+      color: #555;
+      font-size: 0.9rem;
+      margin-top: 0;
+      margin-bottom: 2rem;
+    }
+    .diagram-wrapper {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="diagram-wrapper">
+    <h1>RAG Chatbot — Query Flow</h1>
+    <p class="subtitle">End-to-end trace of a user query from the browser through the backend and back.</p>
+    <div class="mermaid">
+sequenceDiagram
+    actor User
+    participant FE as Frontend<br/>(script.js)
+    participant API as FastAPI<br/>(app.py)
+    participant RAG as RAGSystem<br/>(rag_system.py)
+    participant SM as SessionManager<br/>(session_manager.py)
+    participant AI as AIGenerator<br/>(ai_generator.py)
+    participant Claude as Claude API<br/>(Anthropic)
+    participant TM as ToolManager<br/>(search_tools.py)
+    participant VS as VectorStore<br/>(vector_store.py)
+    participant DB as ChromaDB
+
+    User->>FE: Types message, presses Enter
+    FE->>FE: Disable input, show loading bubble
+    FE->>API: POST /api/query<br/>{ query, session_id }
+
+    API->>SM: create_session() if no session_id
+    SM-->>API: session_id (e.g. "session_1")
+
+    API->>RAG: query(query, session_id)
+
+    RAG->>SM: get_conversation_history(session_id)
+    SM-->>RAG: formatted prior exchanges (or null)
+
+    RAG->>AI: generate_response(prompt, history, tools)
+
+    Note over AI,Claude: 1st API Call — Claude decides whether to search
+    AI->>Claude: messages + system prompt +<br/>search_course_content tool definition
+    Claude-->>AI: stop_reason: "tool_use"<br/>{ name, query, course_name?, lesson_number? }
+
+    AI->>TM: execute_tool("search_course_content", ...)
+    TM->>VS: search(query, course_name, lesson_number)
+
+    alt course_name provided
+        VS->>DB: query course_catalog<br/>(vector similarity on course name)
+        DB-->>VS: best-matching course title
+    end
+
+    VS->>DB: query course_content<br/>(vector similarity, filtered by course/lesson)
+    DB-->>VS: top-5 matching chunks + metadata
+
+    VS-->>TM: SearchResults (documents, metadata)
+    TM-->>AI: formatted string:<br/>"[Course - Lesson N]\n<chunk text>"
+
+    Note over AI,Claude: 2nd API Call — Claude synthesizes the answer
+    AI->>Claude: original messages +<br/>tool_result block (search results)
+    Claude-->>AI: final answer text
+
+    AI-->>RAG: answer string
+
+    RAG->>SM: add_exchange(session_id, query, answer)
+    RAG->>TM: get_last_sources() → reset_sources()
+    RAG-->>API: (answer, sources)
+
+    API-->>FE: { answer, sources, session_id }
+
+    FE->>FE: Remove loading bubble
+    FE->>FE: Render answer via marked.parse()<br/>Render sources in collapsible &lt;details&gt;
+    FE->>User: Displays formatted response
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', sequence: { actorMargin: 60, messageMargin: 30 } });
+  </script>
+</body>
+</html>
