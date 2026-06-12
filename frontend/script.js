@@ -15,11 +15,40 @@ document.addEventListener('DOMContentLoaded', () => {
     sendButton = document.getElementById('sendButton');
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
-    
+
+    initTheme();
     setupEventListeners();
     createNewSession();
     loadCourseStats();
 });
+
+// Theme Toggle
+function initTheme() {
+    const saved = localStorage.getItem('theme') || 'dark';
+    applyTheme(saved);
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    document.getElementById('themeToggle').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleTheme();
+        }
+    });
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('themeToggle').setAttribute(
+        'aria-label',
+        theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'
+    );
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+}
 
 // Event Listeners
 function setupEventListeners() {
