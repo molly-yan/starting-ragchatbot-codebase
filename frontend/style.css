@@ -143,9 +143,12 @@ body {
   padding: 0;
 }
 
-/* Header - Hidden */
+/* Header */
 header {
-  display: none;
+  display: block;
+  padding: 1.25rem 2rem 0;
+  background: var(--background);
+  text-align: center;
 }
 
 header h1 {
@@ -162,6 +165,12 @@ header h1 {
   font-size: 0.95rem;
   color: var(--text-secondary);
   margin-top: 0.5rem;
+}
+
+header hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin-top: 1.25rem;
 }
 
 /* Main Content Area with Sidebar */
