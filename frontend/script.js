@@ -24,30 +24,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Theme Toggle
 function initTheme() {
-    const saved = localStorage.getItem('theme') || 'dark';
-    applyTheme(saved);
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-    document.getElementById('themeToggle').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleTheme();
-        }
-    });
+  const saved = localStorage.getItem("theme") || "dark";
+  applyTheme(saved);
+  document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+  document.getElementById("themeToggle").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleTheme();
+    }
+  });
 }
 
 function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.getElementById('themeToggle').setAttribute(
-        'aria-label',
-        theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'
-    );
+  document.documentElement.setAttribute("data-theme", theme);
+  document
+    .getElementById("themeToggle")
+    .setAttribute("aria-label", theme === "light" ? "Switch to dark mode" : "Switch to light mode");
 }
 
 function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    localStorage.setItem('theme', next);
+  const current = document.documentElement.getAttribute("data-theme");
+  const next = current === "light" ? "dark" : "light";
+  applyTheme(next);
+  localStorage.setItem("theme", next);
 }
 
 // Event Listeners
@@ -57,6 +56,9 @@ function setupEventListeners() {
   chatInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") sendMessage();
   });
+
+  // New chat button
+  document.getElementById("newChatBtn").addEventListener("click", createNewSession);
 
   // Suggested questions
   document.querySelectorAll(".suggested-item").forEach((button) => {
@@ -148,10 +150,17 @@ function addMessage(content, type, sources = null, isWelcome = false) {
   let html = `<div class="message-content">${displayContent}</div>`;
 
   if (sources && sources.length > 0) {
+    const sourceHtml = sources
+      .map((s) =>
+        s.url
+          ? `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.label)}</a>`
+          : escapeHtml(s.label)
+      )
+      .join(", ");
     html += `
             <details class="sources-collapsible">
                 <summary class="sources-header">Sources</summary>
-                <div class="sources-content">${sources.join(", ")}</div>
+                <div class="sources-content">${sourceHtml}</div>
             </details>
         `;
   }
@@ -173,6 +182,9 @@ function escapeHtml(text) {
 // Removed removeMessage function - no longer needed since we handle loading differently
 
 async function createNewSession() {
+  if (currentSessionId) {
+    await fetch(`${API_URL}/session/${currentSessionId}`, { method: "DELETE" });
+  }
   currentSessionId = null;
   chatMessages.innerHTML = "";
   addMessage(
