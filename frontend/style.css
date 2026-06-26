@@ -631,6 +631,20 @@ details[open] .suggested-header::before {
     cursor: pointer;
     text-align: left;
     transition: color 0.2s ease;
+    outline: none;
+}
+
+.new-chat-btn::before {
+    content: "+";
+    display: inline-block;
+    margin-right: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: transform 0.2s ease;
+}
+
+.new-chat-btn:focus {
+    color: var(--primary-color);
 }
 
 .new-chat-btn:hover {
