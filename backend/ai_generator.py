@@ -42,7 +42,7 @@ Provide only the direct answer to what was asked.
         self.base_params = {
             "model": self.model,
             "temperature": 0,
-            "max_tokens": 800
+            "max_tokens": 500
         }
 
     def generate_response(self, query, conversation_history=None, tools=None, tool_manager=None):
