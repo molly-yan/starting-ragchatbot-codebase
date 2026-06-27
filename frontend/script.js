@@ -183,7 +183,11 @@ function escapeHtml(text) {
 
 async function createNewSession() {
   if (currentSessionId) {
-    await fetch(`${API_URL}/session/${currentSessionId}`, { method: "DELETE" });
+    try {
+      await fetch(`${API_URL}/session/${currentSessionId}`, { method: "DELETE" });
+    } catch (e) {
+      // ignore — clear locally regardless
+    }
   }
   currentSessionId = null;
   chatMessages.innerHTML = "";

@@ -622,6 +622,8 @@ details[open] .suggested-header::before {
     width: 100%;
     background: none;
     border: none;
+    appearance: none;
+    -webkit-appearance: none;
     padding: 0.5rem 0;
     font-size: 0.875rem;
     font-weight: 600;
@@ -632,15 +634,6 @@ details[open] .suggested-header::before {
     text-align: left;
     transition: color 0.2s ease;
     outline: none;
-}
-
-.new-chat-btn::before {
-    content: "+";
-    display: inline-block;
-    margin-right: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 700;
-    transition: transform 0.2s ease;
 }
 
 .new-chat-btn:focus {
